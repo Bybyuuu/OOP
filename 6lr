@@ -1,0 +1,368 @@
+import sys
+from PyQt6.QtWidgets import (
+    QApplication, QWidget, QStackedWidget, QVBoxLayout, QLabel, QPushButton,
+    QLineEdit, QTextEdit, QComboBox, QFormLayout, QMessageBox, QDateEdit
+)
+from PyQt6.QtGui import QFont, QPixmap
+from PyQt6.QtCore import Qt, QDate, QUrl
+from PyQt6.QtNetwork import QNetworkAccessManager, QNetworkRequest, QNetworkReply  
+
+class AuthPage(QWidget):
+    def __init__(self, stacked_widget):
+        super().__init__()
+        self.stacked_widget = stacked_widget
+        self.init_ui()
+
+    def init_ui(self):
+        layout = QVBoxLayout()
+        layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        title = QLabel("Вход в фотостудию")
+        title.setFont(QFont("Arial", 36, QFont.Weight.Bold))
+        title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        self.login_input = QLineEdit()
+        self.login_input.setPlaceholderText("Логин")
+        self.login_input.setFont(QFont("Arial", 18))
+
+        self.password_input = QLineEdit()
+        self.password_input.setPlaceholderText("Пароль")
+        self.password_input.setEchoMode(QLineEdit.EchoMode.Password)
+        self.password_input.setFont(QFont("Arial", 18))
+
+        login_btn = QPushButton("Войти")
+        login_btn.setFont(QFont("Arial", 18))
+        login_btn.clicked.connect(self.handle_login)
+        login_btn.setStyleSheet("background-color: white; color: black; padding: 10px 20px; font-size: 20px; border-radius: 10px;")
+
+        layout.addWidget(title)
+        layout.addWidget(self.login_input)
+        layout.addWidget(self.password_input)
+        layout.addWidget(login_btn)
+        self.setLayout(layout)
+        self.setStyleSheet("background-color: #6B0300;")
+
+    def handle_login(self):
+        if self.login_input.text() == "admin" and self.password_input.text() == "123":
+            self.stacked_widget.setCurrentIndex(1)
+        else:
+            QMessageBox.warning(self, "Ошибка", "Неверный логин или пароль")
+
+class HomePage(QWidget):
+    def __init__(self, stacked_widget):
+        super().__init__()
+        self.stacked_widget = stacked_widget
+        self.init_ui()
+
+    def init_ui(self):
+        layout = QVBoxLayout()
+        layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        label = QLabel("Личный кабинет")
+        label.setFont(QFont("Arial", 36, QFont.Weight.Bold))
+
+        btn_booking = QPushButton("Забронировать зал")
+        btn_history = QPushButton("История бронирований")
+        btn_feedback = QPushButton("Оставить отзыв")
+        btn_studio_examples = QPushButton("Залы")
+
+        btn_booking.setFont(QFont("Arial", 18))
+        btn_history.setFont(QFont("Arial", 18))
+        btn_feedback.setFont(QFont("Arial", 18))
+        btn_studio_examples.setFont(QFont("Arial", 18))
+
+        btn_booking.setStyleSheet("background-color: white; color: black; padding: 10px 20px; font-size: 20px; border-radius: 10px;")
+        btn_history.setStyleSheet("background-color: white; color: black; padding: 10px 20px; font-size: 20px; border-radius: 10px;")
+        btn_feedback.setStyleSheet("background-color: white; color: black; padding: 10px 20px; font-size: 20px; border-radius: 10px;")
+        btn_studio_examples.setStyleSheet("background-color: white; color: black; padding: 10px 20px; font-size: 20px; border-radius: 10px;")
+
+        btn_booking.clicked.connect(lambda: self.stacked_widget.setCurrentIndex(2))
+        btn_history.clicked.connect(lambda: self.stacked_widget.setCurrentIndex(3))
+        btn_feedback.clicked.connect(lambda: self.stacked_widget.setCurrentIndex(4))
+        btn_studio_examples.clicked.connect(lambda: self.stacked_widget.setCurrentIndex(5))
+
+        layout.addWidget(label)
+        layout.addWidget(btn_booking)
+        layout.addWidget(btn_history)
+        layout.addWidget(btn_feedback)
+        layout.addWidget(btn_studio_examples)
+        self.setLayout(layout)
+        self.setStyleSheet("background-color: #6B0300;")
+
+class BookingPage(QWidget):
+    def __init__(self, stacked_widget):
+        super().__init__()
+        self.stacked_widget = stacked_widget
+        self.init_ui()
+
+    def init_ui(self):
+        layout = QFormLayout()
+        layout.setFormAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        self.date_input = QDateEdit()
+        self.date_input.setCalendarPopup(True)
+        self.date_input.setDate(QDate.currentDate())
+        self.date_input.setStyleSheet("""
+            QDateEdit {
+                font-size: 24px;
+                background-color: white;
+                color: black;
+                padding: 10px;
+                border-radius: 10px;
+            }
+            QCalendarWidget {
+                background-color: white;
+                color: black;
+            }
+            QCalendarWidget QToolButton {
+                background-color: white;
+                color: black;
+                font-size: 18px;
+            }
+            QCalendarWidget QMenu {
+                background-color: white;
+                color: black;
+            }
+            QCalendarWidget QSpinBox {
+                background-color: white;
+                color: black;
+                font-size: 18px;
+            }
+            QCalendarWidget QAbstractItemView {
+                background-color: white;
+                color: black;
+                selection-background-color: #6B0300;
+                selection-color: white;
+                font-size: 18px;
+            }
+        """)
+
+        self.time_input = QComboBox()
+        self.time_input.addItems(["10:00", "11:00", "12:00", "13:00", "15:00", "17:00", "19:00"])
+        self.time_input.setStyleSheet("""
+            QComboBox {
+                font-size: 24px;
+                background-color: white;
+                color: black;
+                padding: 10px;
+                border-radius: 10px;
+            }
+        """)
+
+        self.room_input = QComboBox()
+        self.room_input.addItems(["1", "2", "3", "VIP"])
+        self.room_input.setStyleSheet("""
+            QComboBox {
+                font-size: 24px;
+                background-color: white;
+                color: black;
+                padding: 10px;
+                border-radius: 10px;
+            }
+        """)
+
+        book_btn = QPushButton("Забронировать")
+        back_btn = QPushButton("Назад")
+        book_btn.setFont(QFont("Arial", 18))
+        back_btn.setFont(QFont("Arial", 18))
+
+        book_btn.setStyleSheet("background-color: white; color: black; padding: 10px 20px; font-size: 20px; border-radius: 10px;")
+        back_btn.setStyleSheet("background-color: white; color: black; padding: 10px 20px; font-size: 20px; border-radius: 10px;")
+
+        book_btn.clicked.connect(self.book)
+        back_btn.clicked.connect(lambda: self.stacked_widget.setCurrentIndex(1))
+
+        layout.addRow("Дата:", self.date_input)
+        layout.addRow("Время:", self.time_input)
+        layout.addRow("№ Зала:", self.room_input)
+        layout.addRow(book_btn)
+        layout.addRow(back_btn)
+
+        self.setLayout(layout)
+        self.setStyleSheet("background-color: #6B0300;")
+
+    def book(self):
+        QMessageBox.information(self, "Успешно", "Бронирование выполнено!")
+
+class HistoryPage(QWidget):
+    def __init__(self, stacked_widget):
+        super().__init__()
+        self.stacked_widget = stacked_widget
+        self.init_ui()
+
+    def init_ui(self):
+        layout = QVBoxLayout()
+        label = QLabel("История Бронирования")
+        label.setFont(QFont("Arial", 24, QFont.Weight.Bold))
+        label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        self.info = QLabel("Дата: 01.01.2025\nВремя: 15:00\nЗал: VIP")
+        self.info.setStyleSheet("""
+            QLabel {
+                font-size: 24px;
+                background-color: white;
+                color: black;
+                padding: 20px;
+                border-radius: 10px;
+            }
+        """)
+        self.info.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        back_btn = QPushButton("Назад")
+        back_btn.setFont(QFont("Arial", 18))
+        back_btn.setStyleSheet("background-color: white; color: black; padding: 10px 20px; font-size: 20px; border-radius: 10px;")
+        back_btn.clicked.connect(lambda: self.stacked_widget.setCurrentIndex(1))
+
+        layout.addWidget(label)
+        layout.addWidget(self.info)
+        layout.addWidget(back_btn)
+        self.setLayout(layout)
+        self.setStyleSheet("background-color: #6B0300;")
+
+class FeedbackPage(QWidget):
+    def __init__(self, stacked_widget):
+        super().__init__()
+        self.stacked_widget = stacked_widget
+        self.init_ui()
+
+    def init_ui(self):
+        layout = QVBoxLayout()
+        layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        label = QLabel("Оставить отзыв")
+        label.setFont(QFont("Arial", 36, QFont.Weight.Bold))
+        label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        self.feedback_input = QTextEdit()
+        self.feedback_input.setPlaceholderText("Ваш отзыв...")
+        self.feedback_input.setFont(QFont("Arial", 18))
+
+        send_btn = QPushButton("Отправить")
+        back_btn = QPushButton("Назад")
+        send_btn.setFont(QFont("Arial", 18))
+        back_btn.setFont(QFont("Arial", 18))
+
+        send_btn.setStyleSheet("background-color: white; color: black; padding: 10px 20px; font-size: 20px; border-radius: 10px;")
+        back_btn.setStyleSheet("background-color: white; color: black; padding: 10px 20px; font-size: 20px; border-radius: 10px;")
+
+        send_btn.clicked.connect(self.send_feedback)
+        back_btn.clicked.connect(lambda: self.stacked_widget.setCurrentIndex(1))
+
+        layout.addWidget(label)
+        layout.addWidget(self.feedback_input)
+        layout.addWidget(send_btn)
+        layout.addWidget(back_btn)
+        self.setLayout(layout)
+        self.setStyleSheet("background-color: #6B0300;")
+
+    def send_feedback(self):
+        QMessageBox.information(self, "Спасибо!", "Ваш отзыв отправлен 💌")
+        self.feedback_input.clear()
+
+class StudioExamplesPage(QWidget):
+    def __init__(self, stacked_widget):
+        super().__init__()
+        self.stacked_widget = stacked_widget
+        self.init_ui()
+
+    def init_ui(self):
+        layout = QVBoxLayout()
+        layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        self.image_label = QLabel()
+        self.image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        
+        self.room_label = QLabel()
+        self.room_label.setFont(QFont("Arial", 24, QFont.Weight.Bold))
+        self.room_label.setStyleSheet("color: white;")
+        self.room_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        self.images = [
+            ("https://sun9-59.userapi.com/impg/B5z9cS4h_KvmLkj4mqPzELRhMMgCYKV17LhM0g/IcEsXzTkZoM.jpg?size=1800x1200&quality=95&sign=d8334407bb812fcc8592cc0e4d4c43fb&type=album", "Зал 1"),
+            ("https://avatars.mds.yandex.net/get-altay/11873493/2a00000193304c4dc9c2cd459f314d5f8127/XXL_height", "Зал 2"),
+            ("https://sun9-73.userapi.com/impg/SeR7sWllZkc-UTst24t4ez-bvF7tuIunfx-qMA/RaYcA7OhBO4.jpg?size=1800x1200&quality=95&sign=e00ca738d75aeaf65fce9806bb31651d&type=album", "Зал 3"),
+            ("https://pp.userapi.com/c847221/v847221194/104395/jp2w2Vg0n1s.jpg", "VIP Зал")  
+        ]
+        self.current_image_index = 0
+        self.update_image()
+
+        next_btn = QPushButton("Следующий зал")
+        prev_btn = QPushButton("Предыдущий зал")
+        back_btn = QPushButton("Назад")
+
+        next_btn.setFont(QFont("Arial", 18))
+        prev_btn.setFont(QFont("Arial", 18))
+        back_btn.setFont(QFont("Arial", 18))
+
+        next_btn.setStyleSheet("background-color: white; color: black; padding: 10px 20px; font-size: 20px; border-radius: 10px;")
+        prev_btn.setStyleSheet("background-color: white; color: black; padding: 10px 20px; font-size: 20px; border-radius: 10px;")
+        back_btn.setStyleSheet("background-color: white; color: black; padding: 10px 20px; font-size: 20px; border-radius: 10px;")
+
+        next_btn.clicked.connect(self.next_image)
+        prev_btn.clicked.connect(self.prev_image)
+        back_btn.clicked.connect(lambda: self.stacked_widget.setCurrentIndex(1))
+
+        layout.addWidget(self.room_label)
+        layout.addWidget(self.image_label)
+        layout.addWidget(prev_btn)
+        layout.addWidget(next_btn)
+        layout.addWidget(back_btn)
+        self.setLayout(layout)
+        self.setStyleSheet("background-color: #6B0300;")
+
+    def update_image(self):
+        image_url, room_name = self.images[self.current_image_index]
+        self.room_label.setText(room_name)
+        image_url = QUrl(image_url)
+        pixmap = QPixmap()
+        pixmap.loadFromData(self.download_image(image_url))
+        self.image_label.setPixmap(pixmap.scaled(400, 300, Qt.AspectRatioMode.KeepAspectRatio))
+
+    def download_image(self, image_url: QUrl):
+        manager = QNetworkAccessManager(self)
+        request = QNetworkRequest(image_url)
+        reply = manager.get(request)
+        reply.finished.connect(lambda: self.on_image_downloaded(reply))
+        return reply.readAll()
+
+    def on_image_downloaded(self, reply):
+        data = reply.readAll()
+        self.update_image_with_data(data)
+
+    def update_image_with_data(self, data):
+        pixmap = QPixmap()
+        pixmap.loadFromData(data)
+        self.image_label.setPixmap(pixmap.scaled(400, 300, Qt.AspectRatioMode.KeepAspectRatio))
+
+    def next_image(self):
+        self.current_image_index = (self.current_image_index + 1) % len(self.images)
+        self.update_image()
+
+    def prev_image(self):
+        self.current_image_index = (self.current_image_index - 1) % len(self.images)
+        self.update_image()
+
+class MainApp(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Фотостудия креативных съемок CAMERA")
+        self.setGeometry(100, 100, 400, 600)
+
+        self.stacked_widget = QStackedWidget()
+        self.stacked_widget.addWidget(AuthPage(self.stacked_widget))
+        self.stacked_widget.addWidget(HomePage(self.stacked_widget))
+        self.stacked_widget.addWidget(BookingPage(self.stacked_widget))
+        self.stacked_widget.addWidget(HistoryPage(self.stacked_widget))
+        self.stacked_widget.addWidget(FeedbackPage(self.stacked_widget))
+        self.stacked_widget.addWidget(StudioExamplesPage(self.stacked_widget))
+
+        layout = QVBoxLayout()
+        layout.addWidget(self.stacked_widget)
+        self.setLayout(layout)
+        self.setStyleSheet("background-color: #6B0300;")
+
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    window = MainApp()
+    window.show()
+    sys.exit(app.exec())
